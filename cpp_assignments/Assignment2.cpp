@@ -1,5 +1,5 @@
 /* Stejara Dinulescu
- * Assignment 1: The program should play the sound of a sawtooth wave and 
+ * Assignment 2: Create a simple audio program. The program should play the sound of a sawtooth wave and 
  * present and interface with two sliders, one for controlling frequency and another for controlling amplitude.
  * Due Oct 13 2020
 */

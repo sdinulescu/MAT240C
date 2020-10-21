@@ -46,7 +46,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 16.0, 15.0, 500.0, 74.0 ],
-					"text" : "Stejara Dinulescu\nAssignment 1: Create a simple audio program. The program should play the sound of a sawtooth wave and present and interface with two sliders, one for controlling frequency and another for controlling amplitude.\nDue Oct 13 2020"
+					"text" : "Stejara Dinulescu\nAssignment 2: Create a simple audio program. The program should play the sound of a sawtooth wave and present and interface with two sliders, one for controlling frequency and another for controlling amplitude.\nDue Oct 13 2020"
 				}
 
 			}
