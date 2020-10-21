@@ -10,15 +10,15 @@
 #include "al/app/al_App.hpp"
 #include "al/ui/al_ParameterGUI.hpp"
 #include "al/ui/al_Parameter.hpp"
-//#include <cmath>
+#include <cmath>
 #include <iostream>
 
 using namespace al;
 
-# define PI 3.14159  /* pi */
+# define PI 3.14159265358979323846  /* pi */
 
 struct MyApp : public App {
-  Parameter frequency{"frequency", "", 440.0f}; // adjusts frequency of saw osc
+  Parameter frequency{"frequency", "", 0.0f}; // adjusts frequency of saw osc
   Parameter amplitude{"amplitude", "", 0.5}; // adjusts amplitude of saw osc
   //gam::Saw<> saw; // creates saw oscillator, using Gamma -> default freq and phase params are 440 and 0, respectively (from Gamma Oscillator.h file)
 
@@ -39,10 +39,10 @@ struct MyApp : public App {
 
     float vf = 0.5; //virtual filter to get rid of nyquist ringing -> added from class 10.21
     
-    void set(float freq, float samplerate) { // calculate w and scaling
-      w = freq/samplerate; // normalized frequency
+    void set(float freq) { // calculate w and scaling
+      w = freq/44100; // normalized frequency
       float n = 0.5f-w;
-      scaling = vf * 13.0f * n*n*n*n; // calculate scaling -> add vf here
+      scaling = vf * 13.0f * n*n*n*n; // calculate scaling
       DC = 0.376f - w*0.752f; // calculate DC compensation
       osc = 0.f; phase = 0.f; // reset oscillator and phase
       norm = 1.0f - 2.0f*w; // calculate normalization
@@ -50,19 +50,14 @@ struct MyApp : public App {
     
     // process loop for creating a bandlimited saw wave
     float operator()() { 
-        // increment accumulator
-        phase += 2.0f*w; 
-        //wrap
-        if (phase >= 1.0f) phase -= 2.0f;
-        // calculate next sample
-        osc = (osc + sin(2*PI*(phase + osc*scaling)))*0.5f;
-        // compensate HF rolloff
-        float out = a0*osc + a1*in_hist; 
-        in_hist = osc;
-        out = out + DC; // compensate DC offset
-        //return next sample value
-        return out*norm;
-        //*output++ = out*norm; // store normalized result
+      // increment accumulator
+      phase += 2.0f*w; if (phase >= 1.0f) phase -= 2.0f;
+      // calculate next sample
+      osc = (osc + sin(2*PI*(phase + osc*scaling)))*0.5f;
+      // compensate HF rolloff
+      float out = a0*osc + a1*in_hist; in_hist = osc;
+      out = out + DC; // compensate DC offset
+      return (out*norm); // store normalized result
     }
     
     // // process loop for creating a bandlimited PWM pulse
@@ -90,7 +85,7 @@ struct MyApp : public App {
     imguiInit();
     // Set min and max for parameters
     frequency.min(0.0);
-    frequency.max(1000.0);
+    frequency.max(2000.0);
     amplitude.min(0.0);
     amplitude.max(1.0);
   }
@@ -111,10 +106,11 @@ struct MyApp : public App {
   }
 
   void onSound(AudioIOData &io) override {
+    // program only makes sound if the saw.set() call is outside the while loop; however, this makes us hear two saw waves
+    saw.set(frequency); // adjust the freq of the saw oscillator based on frequency slider
     while (io()) {
-      saw.set(frequency, 44100); // adjust the freq of the saw oscillator based on frequency slider
       float f = saw() * amplitude;
-      //std::cout << f << std::endl;
+      std::cout << f << std::endl;
       io.out(0) = f;  // adjust the amp of the saw oscillator based on amplitude slider
       io.out(1) = f;
     }
